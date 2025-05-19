@@ -1,40 +1,62 @@
 import java.util.*;
-public class TopologicalSortDAG {
-    static List<Integer> topologicalSort(int n, Map<Integer, List<Integer>> graph) {
-        int[] inDegree = new int[n];
-        for (int u : graph.keySet()) {
-            for (int v : graph.get(u)) {
-                inDegree[v]++;
-            }
+
+public class TopologicalSort {
+    private int vertices;  // Number of vertices
+    private List<List<Integer>> adj;  // Adjacency list
+
+    public TopologicalSort(int v) {
+        vertices = v;
+        adj = new ArrayList<>();
+        for (int i = 0; i < v; i++) {
+            adj.add(new ArrayList<>());
         }
-        Queue<Integer> queue = new LinkedList<>();
-        for (int i = 0; i < n; i++) {
-            if (inDegree[i] == 0) queue.offer(i);
-        }
-        List<Integer> topOrder = new ArrayList<>();
-        while (!queue.isEmpty()) {
-            int node = queue.poll();
-            topOrder.add(node);
-            for (int neighbor : graph.getOrDefault(node, new ArrayList<>())) {
-                inDegree[neighbor]--;
-                if (inDegree[neighbor] == 0) queue.offer(neighbor);
-            }
-        }
-        if (topOrder.size() != n) return new ArrayList<>(); // Cycle detected or not a DAG
-        return topOrder;
     }
-    public static void main(String[] args) {
-        int n = 6;
-        Map<Integer, List<Integer>> graph = new HashMap<>();
-        graph.put(5, Arrays.asList(2, 0));
-        graph.put(4, Arrays.asList(0, 1));
-        graph.put(2, Arrays.asList(3));
-        graph.put(3, Arrays.asList(1));
-        List<Integer> result = topologicalSort(n, graph);
-        if (result.isEmpty()) {
-            System.out.println("Cycle detected or not a DAG");
-        } else {
-            System.out.println(result);
+
+    // Add a directed edge from u to v
+    public void addEdge(int u, int v) {
+        adj.get(u).add(v);
+    }
+
+    // Recursive DFS function
+    private void dfs(int node, boolean[] visited, Stack<Integer> stack) {
+        visited[node] = true;
+        for (int neighbor : adj.get(node)) {
+            if (!visited[neighbor]) {
+                dfs(neighbor, visited, stack);
+            }
         }
+        stack.push(node);  // Push after visiting neighbors
+    }
+
+    // Function to perform topological sort
+    public void topologicalSort() {
+        Stack<Integer> stack = new Stack<>();
+        boolean[] visited = new boolean[vertices];
+
+        for (int i = 0; i < vertices; i++) {
+            if (!visited[i]) {
+                dfs(i, visited, stack);
+            }
+        }
+
+        // Print topological order
+        while (!stack.isEmpty()) {
+            System.out.print(stack.pop() + " ");
+        }
+    }
+
+    // Main function to test
+    public static void main(String[] args) {
+        TopologicalSort graph = new TopologicalSort(6);
+        
+        graph.addEdge(5, 2);
+        graph.addEdge(5, 0);
+        graph.addEdge(4, 0);
+        graph.addEdge(4, 1);
+        graph.addEdge(2, 3);
+        graph.addEdge(3, 1);
+        
+        System.out.println("Topological Sort:");
+        graph.topologicalSort();
     }
 }
